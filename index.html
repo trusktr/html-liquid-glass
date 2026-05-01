@@ -261,7 +261,9 @@
 
     <script>
         const heroFrame = document.getElementById("hero-demo-frame");
+        const heroMockFrame = document.getElementById("hero-demo-mock-frame");
         const heroMockBase = document.getElementById("hero-demo-mock-base");
+        const heroHtmlFrame = document.getElementById("hero-demo-html-retry-frame");
         const heroHtmlBase = document.getElementById("hero-demo-html-base");
         let heroHtmlActivated = false;
         // const heroBackgroundURL = "https://images.unsplash.com/photo-1688494930098-e88c53c26e3a?auto=format&q=80&fit=crop&w=1400&h=1600&crop=focalpoint&fp-x=0.3&fp-y=0.5&fp-z=1";
@@ -296,6 +298,14 @@
                 backgroundY: clamp(rectTop * 0.25 - 195.75, -260, -60),
                 lensY: clamp(rectTop * 0.1875 - 88.8125, -137, 13)
             };
+        }
+
+        function heroCardParallaxOffset(rectTop) {
+            const centeredTop = window.innerHeight * 0.5 - heroCardSceneHeight * 0.5;
+            const centeredLensY = heroParallaxFromRectTop(centeredTop).lensY;
+            const currentLensY = heroParallaxFromRectTop(rectTop).lensY;
+
+            return clamp((currentLensY - centeredLensY) * 0.24, -18, 18);
         }
 
         function heroFilterMarkup(filterId, size = 150) {
@@ -339,12 +349,13 @@
             `;
         }
 
-        function heroTextCardMarkup() {
+        function heroTextCardMarkup(cardId = "") {
             const statusText = heroHtmlActivated ? "Button click reached the live HTML node." : "The button below is ordinary HTML inside the foreignObject.";
             const buttonLabel = heroHtmlActivated ? "Activated" : "Press me";
             const cardClassName = heroHtmlActivated ? "hero-text-card is-active" : "hero-text-card";
+            const cardIdAttribute = cardId ? ` id="${cardId}"` : "";
             return `
-                <article class="${cardClassName}">
+                <article${cardIdAttribute} class="${cardClassName}">
                     <div class="hero-text-kicker">HTML Backdrop</div>
                     <h2 class="hero-text-title">Liquid glass can bend live text too.</h2>
                     <p class="hero-text-copy">This live version reuses the same layout as the screenshot mock, but keeps the card as ordinary HTML underneath the glass lens.</p>
@@ -358,20 +369,20 @@
 
         function heroMockBaseMarkup() {
             return `
-                <img class="hero-card-snapshot" src="${heroCardSnapshotAssetURL}" alt="Screenshot of the HTML card" width="${heroCardSnapshotWidth}" height="${heroCardSnapshotHeight}">
+                <img class="hero-card-snapshot" id="hero-demo-mock-snapshot" src="${heroCardSnapshotAssetURL}" alt="Screenshot of the HTML card" width="${heroCardSnapshotWidth}" height="${heroCardSnapshotHeight}">
             `;
         }
 
         function heroHtmlBaseMarkup() {
             return `
-                ${heroTextCardMarkup()}
+                ${heroTextCardMarkup("hero-demo-html-card")}
             `;
         }
 
         function heroMockLensMarkup() {
             return `
                 ${heroLensShellMarkup("hero-demo-mock-lens", "hero-demo-mock-filter", heroCardLensSize, `
-                        <image href="${heroCardSnapshotAssetURL}" x="${heroCardLensImageX}" y="${heroCardLensImageY}" width="${heroCardSnapshotWidth}" height="${heroCardSnapshotHeight}" preserveAspectRatio="none"></image>`)}
+                        <image id="hero-demo-mock-lens-image" href="${heroCardSnapshotAssetURL}" x="${heroCardLensImageX}" y="${heroCardLensImageY}" width="${heroCardSnapshotWidth}" height="${heroCardSnapshotHeight}" preserveAspectRatio="none"></image>`)}
             `;
         }
 
@@ -380,7 +391,7 @@
                 ${heroLensShellMarkup("hero-demo-html-lens", "hero-demo-html-filter", heroCardLensSize, `
                         <foreignObject x="0" y="0" width="${heroCardLensSize}" height="${heroCardLensSize}">
                             <div xmlns="http://www.w3.org/1999/xhtml" style="width:${heroCardLensSize}px;height:${heroCardLensSize}px;overflow:hidden;border-radius:${heroCardLensSize / 2}px;">
-                                <div class="hero-card-stage hero-card-stage--lens">
+                                <div class="hero-card-stage hero-card-stage--lens" id="hero-demo-html-lens-stage">
                                     ${heroTextCardMarkup()}
                                 </div>
                             </div>
@@ -422,6 +433,34 @@
             if (foreignImage) {
                 foreignImage.style.transform = `translateX(-29px) translateY(${lensY}px)`;
             }
+
+            if (heroMockFrame) {
+                const mockOffsetY = heroCardParallaxOffset(heroMockFrame.getBoundingClientRect().top);
+                const heroMockSnapshot = document.getElementById("hero-demo-mock-snapshot");
+                const heroMockLensImage = document.getElementById("hero-demo-mock-lens-image");
+
+                if (heroMockSnapshot) {
+                    heroMockSnapshot.style.transform = `translateY(${mockOffsetY}px)`;
+                }
+
+                if (heroMockLensImage) {
+                    heroMockLensImage.setAttribute("y", `${heroCardLensImageY + mockOffsetY}`);
+                }
+            }
+
+            if (heroHtmlFrame) {
+                const htmlOffsetY = heroCardParallaxOffset(heroHtmlFrame.getBoundingClientRect().top);
+                const heroHtmlCard = document.getElementById("hero-demo-html-card");
+                const heroHtmlLensStage = document.getElementById("hero-demo-html-lens-stage");
+
+                if (heroHtmlCard) {
+                    heroHtmlCard.style.transform = `translateY(${htmlOffsetY}px)`;
+                }
+
+                if (heroHtmlLensStage) {
+                    heroHtmlLensStage.style.transform = `translate(${-heroCardLensX}px, ${-heroCardLensY + htmlOffsetY}px)`;
+                }
+            }
         }
 
         function renderScene() {
@@ -443,6 +482,7 @@
 
             heroHtmlActivated = !heroHtmlActivated;
             renderCardSamples();
+            updateHeroDemo();
         });
         window.addEventListener("resize", renderScene, { passive: true });
         window.addEventListener("scroll", updateHeroDemo, { passive: true });
