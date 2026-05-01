@@ -367,56 +367,68 @@
                 </article>`;
         }
 
-        function heroMockBaseMarkup() {
-            return `
-                <img class="hero-card-snapshot" id="hero-demo-mock-snapshot" src="${heroCardSnapshotAssetURL}" alt="Screenshot of the HTML card" width="${heroCardSnapshotWidth}" height="${heroCardSnapshotHeight}">
-            `;
+        function heroCardBaseMarkup(html = false) {
+            return html
+                ? heroTextCardMarkup("hero-demo-html-card")
+                : `<img class="hero-card-snapshot" id="hero-demo-mock-snapshot" src="${heroCardSnapshotAssetURL}" alt="Screenshot of the HTML card" width="${heroCardSnapshotWidth}" height="${heroCardSnapshotHeight}">`;
         }
 
-        function heroHtmlBaseMarkup() {
-            return `
-                ${heroTextCardMarkup("hero-demo-html-card")}
-            `;
-        }
-
-        function heroMockLensMarkup() {
-            return `
-                ${heroLensShellMarkup("hero-demo-mock-lens", "hero-demo-mock-filter", heroCardLensSize, `
-                        <image id="hero-demo-mock-lens-image" href="${heroCardSnapshotAssetURL}" x="${heroCardLensImageX}" y="${heroCardLensImageY}" width="${heroCardSnapshotWidth}" height="${heroCardSnapshotHeight}" preserveAspectRatio="none"></image>`)}
-            `;
-        }
-
-        function heroHtmlLensMarkup() {
-            return `
-                ${heroLensShellMarkup("hero-demo-html-lens", "hero-demo-html-filter", heroCardLensSize, `
+        function heroCardLensMarkup(html = false) {
+            return heroLensShellMarkup(
+                html ? "hero-demo-html-lens" : "hero-demo-mock-lens",
+                html ? "hero-demo-html-filter" : "hero-demo-mock-filter",
+                heroCardLensSize,
+                html
+                    ? `
                         <foreignObject x="0" y="0" width="${heroCardLensSize}" height="${heroCardLensSize}">
                             <div xmlns="http://www.w3.org/1999/xhtml" style="width:${heroCardLensSize}px;height:${heroCardLensSize}px;overflow:hidden;border-radius:${heroCardLensSize / 2}px;">
                                 <div class="hero-card-stage hero-card-stage--lens" id="hero-demo-html-lens-stage">
                                     ${heroTextCardMarkup()}
                                 </div>
                             </div>
-                        </foreignObject>`)}
-            `;
+                        </foreignObject>`
+                    : `<image id="hero-demo-mock-lens-image" href="${heroCardSnapshotAssetURL}" x="${heroCardLensImageX}" y="${heroCardLensImageY}" width="${heroCardSnapshotWidth}" height="${heroCardSnapshotHeight}" preserveAspectRatio="none"></image>`
+            );
+        }
+
+        function renderCardSample(base, lensId, html = false) {
+            if (base) {
+                base.innerHTML = heroCardBaseMarkup(html);
+            }
+
+            const lens = document.getElementById(lensId);
+            if (lens) {
+                lens.outerHTML = heroCardLensMarkup(html);
+            }
         }
 
         function renderCardSamples() {
-            if (heroMockBase) {
-                heroMockBase.innerHTML = heroMockBaseMarkup();
+            renderCardSample(heroMockBase, "hero-demo-mock-lens");
+            renderCardSample(heroHtmlBase, "hero-demo-html-lens", true);
+        }
+
+        function updateCardSample(frame, baseId, lensId, html = false) {
+            if (!frame) {
+                return;
             }
 
-            const heroMockLens = document.getElementById("hero-demo-mock-lens");
-            if (heroMockLens) {
-                heroMockLens.outerHTML = heroMockLensMarkup();
+            const offsetY = heroCardParallaxOffset(frame.getBoundingClientRect().top);
+            const base = document.getElementById(baseId);
+            if (base) {
+                base.style.transform = `translateY(${offsetY}px)`;
             }
 
-            if (heroHtmlBase) {
-                heroHtmlBase.innerHTML = heroHtmlBaseMarkup();
+            const lens = document.getElementById(lensId);
+            if (!lens) {
+                return;
             }
 
-            const heroHtmlLens = document.getElementById("hero-demo-html-lens");
-            if (heroHtmlLens) {
-                heroHtmlLens.outerHTML = heroHtmlLensMarkup();
+            if (html) {
+                lens.style.transform = `translate(${-heroCardLensX}px, ${-heroCardLensY + offsetY}px)`;
+                return;
             }
+
+            lens.setAttribute("y", `${heroCardLensImageY + offsetY}`);
         }
 
         function updateHeroDemo() {
@@ -434,33 +446,8 @@
                 foreignImage.style.transform = `translateX(-29px) translateY(${lensY}px)`;
             }
 
-            if (heroMockFrame) {
-                const mockOffsetY = heroCardParallaxOffset(heroMockFrame.getBoundingClientRect().top);
-                const heroMockSnapshot = document.getElementById("hero-demo-mock-snapshot");
-                const heroMockLensImage = document.getElementById("hero-demo-mock-lens-image");
-
-                if (heroMockSnapshot) {
-                    heroMockSnapshot.style.transform = `translateY(${mockOffsetY}px)`;
-                }
-
-                if (heroMockLensImage) {
-                    heroMockLensImage.setAttribute("y", `${heroCardLensImageY + mockOffsetY}`);
-                }
-            }
-
-            if (heroHtmlFrame) {
-                const htmlOffsetY = heroCardParallaxOffset(heroHtmlFrame.getBoundingClientRect().top);
-                const heroHtmlCard = document.getElementById("hero-demo-html-card");
-                const heroHtmlLensStage = document.getElementById("hero-demo-html-lens-stage");
-
-                if (heroHtmlCard) {
-                    heroHtmlCard.style.transform = `translateY(${htmlOffsetY}px)`;
-                }
-
-                if (heroHtmlLensStage) {
-                    heroHtmlLensStage.style.transform = `translate(${-heroCardLensX}px, ${-heroCardLensY + htmlOffsetY}px)`;
-                }
-            }
+            updateCardSample(heroMockFrame, "hero-demo-mock-snapshot", "hero-demo-mock-lens-image");
+            updateCardSample(heroHtmlFrame, "hero-demo-html-card", "hero-demo-html-lens-stage", true);
         }
 
         function renderScene() {
