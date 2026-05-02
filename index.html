@@ -47,6 +47,25 @@
             width: 100%;
             display: grid;
             place-items: center;
+            gap: 18px;
+        }
+
+        .page-intro {
+            width: var(--scene-w);
+            margin: 0;
+            color: rgba(24, 34, 48, 0.78);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .page-intro a {
+            color: #244c96;
+            text-decoration-thickness: 0.08em;
+            text-underline-offset: 0.14em;
+        }
+
+        .page-intro a:hover {
+            color: #17315f;
         }
 
         .scene-shell {
@@ -224,6 +243,15 @@
 
 <body>
     <main>
+        <p class="page-intro">This page recreates and experiments on ideas from <a
+                href="https://kube.io/blog/liquid-glass-css-svg" target="_blank" rel="noopener noreferrer">Liquid Glass
+                in the Browser: Refraction with CSS and SVG</a> by kube.io, using SVG
+            <code>&lt;foreignObject&gt;</code> elements instead of CSS
+            <code>backdrop-filter</code> for cross-browser compatibility.
+        </p>
+
+        <p class="page-intro">Currently working in Chrome, Edge, and Firefox, but not Safari.</p>
+
         <section class="scene-shell" aria-label="Liquid glass hero demo">
             <section class="hero-demo-block" aria-label="Liquid glass hero demo">
                 <div class="hero-demo-frame" id="hero-demo-frame">
