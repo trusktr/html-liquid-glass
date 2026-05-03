@@ -1,7 +1,7 @@
 # HTML Liquid Glass
 
-Recreations of and experiments on ideas from [Liquid Glass in the Browser: Refraction with CSS and SVG](https://kube.io/blog/liquid-glass-css-svg) by kube.io, using SVG `<foreignObject>` elements instead of CSS `backdrop-filter` for cross-browser compatibility.
+Recreations of ideas from kube.io's [Liquid Glass in the Browser](https://kube.io/blog/liquid-glass-css-svg), but using SVG `<foreignObject>` elements instead of CSS `backdrop-filter` for cross-browser compatibility. **Currently working in Chrome, Edge, and Firefox, but not Safari.**
 
-Currently working in Chrome, Edge, and Firefox, but not Safari.
+Live demo 👇
 
-![AI-assisted screengrab of HTML refracted behind a circular glass](html-card-scroll-parallax.webp)
+[![AI-assisted screengrab of HTML refracted behind a circular glass](html-card-scroll-parallax.webp)](https://trusktr.github.io/html-liquid-glass/)
